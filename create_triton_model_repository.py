@@ -21,6 +21,11 @@ def get_args():
         default="model_repository",
         help="Path to the output dir.",
     )
+    parser.add_argument(
+        "--use-autoconfig",
+        action="store_true",
+        help="Uses the triton autoconfig feature for onnx",
+    )
 
     return parser.parse_args()
 
@@ -37,11 +42,20 @@ def main():
 
         model_root_dir = f"{model_repository_path}/{metadata['name']}"
         model_file_extension = _model_format_to_modelfile_extension(metadata["format"])
-        config_path = f"{model_root_dir}/config.pbtxt"
         model_triton_path = f"{model_root_dir}/1/model.{model_file_extension}"
         os.makedirs(os.path.dirname(model_triton_path), exist_ok=True)
 
-        create_triton_pbtxt_file(metadata, config_path)
+        if not (
+            args.use_autoconfig
+            and metadata["format"]
+            in (
+                "onnx",
+                "tensorrt",
+                "tensorflow",
+            )
+        ):
+            config_path = f"{model_root_dir}/config.pbtxt"
+            create_triton_pbtxt_file(metadata, config_path)
         shutil.copy(model_file, model_triton_path)
 
 
@@ -102,6 +116,7 @@ def create_template_data(metadata: Dict) -> Dict[str, Any]:
         "name": _get_io_tensorname(metadata, "input"),
         "data_type": _iodtype_to_triton_dtype(metadata["input_datatype"]),
         "dims": metadata["input_shape"],
+        "reshape": metadata["input_shape"],
     }
 
     input_semantics = metadata["input_semantics"]
