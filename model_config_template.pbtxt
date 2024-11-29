@@ -1,0 +1,27 @@
+name: "{{ model_name }}"
+platform: "{{ platform }}"
+max_batch_size : {{ max_batch_size }}
+input [
+{%- for input in inputs %}
+  {
+    name: "{{ input.name }}"
+    data_type: {{ input.data_type}}
+    {%- if 'format' in input %}
+    format: {{ input.format}}
+    {%- endif %}
+    dims: {{ input.dims}}
+    {%- if 'reshape' in input %}
+    reshape: { shape: {{ input.reshape.shape}} }
+    {%- endif %}
+  }{{ "," if not loop.last else "" }}
+{%- endfor %}
+]
+output [
+{%- for output in outputs %}
+  {
+    name: "{{ output.name}}"
+    data_type: {{ output.data_type}}
+    dims: {{ output.dims}}
+  }{{ "," if not loop.last else "" }}
+{%- endfor %}
+]
