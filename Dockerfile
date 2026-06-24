@@ -8,7 +8,7 @@ COPY create_triton_model_repository.py .
 COPY models /work/models
 RUN python3 create_triton_model_repository.py --use-autoconfig
 
-FROM nvcr.io/nvidia/tritonserver:23.12-py3
+FROM nvcr.io/nvidia/tritonserver:24.09-py3
 
 COPY --from=build_stage /work/model_repository /model_repository
 
